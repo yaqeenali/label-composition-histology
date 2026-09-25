@@ -1,5 +1,0 @@
-assay,n,positives,negatives,MDD_full,n_subgroup,MDD_subgroup,MDD_n900_same_prevalence,assumptions
-GHI (Oncotype),81,67,14,0.154,56,0.173,0.046,both AUC 0.80; rho 0.5; alpha 0.05 two-sided; power 0.80
-MammaPrint,81,67,14,0.154,56,,0.046,both AUC 0.80; rho 0.5; alpha 0.05 two-sided; power 0.80
-ROR-P,81,50,31,0.135,56,0.165,0.04,both AUC 0.80; rho 0.5; alpha 0.05 two-sided; power 0.80
-ROR-S,81,32,49,0.148,56,0.221,0.044,both AUC 0.80; rho 0.5; alpha 0.05 two-sided; power 0.80

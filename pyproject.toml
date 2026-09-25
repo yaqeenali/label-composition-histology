@@ -1,7 +1,7 @@
 [project]
 name = "mmfusion"
 version = "0.2.0"
-description = "Multimodal fusion and MIL modelling for histopathology and radiology"
+description = "Gated-attention MIL over UNI patch embeddings for breast cancer risk-signature prediction (label-composition study)"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
 dependencies = [

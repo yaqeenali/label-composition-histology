@@ -1,4 +1,0 @@
-assay,cut,positives,negatives,AUC_ER_fixed,kappa_ER,AUC_model,AUC_clin_predeclared,d_vs_clin_predeclared,CI,p
-GHI (Oncotype),High vs Intermediate+Low,61,20,0.59,0.098,0.781,0.589,0.192,"[0.058, 0.340]",0.005
-ROR-P,high vs medium+low,13,68,0.74,0.511,0.897,0.861,0.036,"[-0.057, 0.145]",0.4925
-ROR-S,high vs medium+low,15,66,0.826,0.726,0.928,0.959,-0.03,"[-0.094, 0.025]",0.304

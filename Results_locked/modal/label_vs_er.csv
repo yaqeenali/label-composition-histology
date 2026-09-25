@@ -1,5 +1,0 @@
-target,n,pct_concordant_with_ER,AUC_of_ER_alone,positives,negatives
-GHI (Oncotype),82,68.3,0.582,67,15
-MammaPrint,82,93.9,0.85,68,14
-ROR-P,82,52.4,0.61,50,32
-ROR-S,82,74.4,0.672,32,50
