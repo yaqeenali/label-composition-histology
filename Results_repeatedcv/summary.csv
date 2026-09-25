@@ -1,0 +1,5 @@
+assay,repeats,AUC_hist_mean,AUC_hist_sd,AUC_hist_min,AUC_hist_max,margin_mean,margin_sd,margin_min,margin_max,repeats_margin_positive
+GHI,5,0.718,0.067,0.633,0.814,0.213,0.051,0.162,0.28,5
+MammaPrint,5,0.903,0.025,0.877,0.941,-0.006,0.048,-0.061,0.063,2
+ROR-P,5,0.793,0.016,0.772,0.815,0.199,0.045,0.145,0.249,5
+ROR-S,5,0.791,0.034,0.744,0.834,0.111,0.046,0.05,0.167,5

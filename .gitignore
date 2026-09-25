@@ -1,0 +1,18 @@
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+# patch embeddings and pooled tensors: large, regenerable from TCGA slides with Trident + UNI
+data/tcga_brca/_pool/
+data/tcga_brca/_pool_pt/
+*.pt
+*.npz
+# build artefacts
+manuscript/overleaf/*.aux
+manuscript/overleaf/*.log
+manuscript/overleaf/*.out
+manuscript/overleaf/*.fls
+manuscript/overleaf/*.fdb_latexmk
+figs/
+Results_repeatedcv/progress.log
+Results_repeatedcv/nohup.out

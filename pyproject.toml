@@ -1,0 +1,39 @@
+[project]
+name = "mmfusion"
+version = "0.2.0"
+description = "Multimodal fusion and MIL modelling for histopathology and radiology"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "torch>=2.0,<3",
+    "numpy>=1.24,<3",
+    "pandas>=2.0,<4",
+    "scikit-learn>=1.3,<2",
+    "scipy>=1.10,<2",
+    "matplotlib>=3.7,<4",
+    "joblib>=1.3,<2",
+    "pyyaml>=6.0,<7",
+    "tqdm>=4.65,<5",
+]
+
+[project.optional-dependencies]
+wandb = ["wandb>=0.16"]
+excel = ["openpyxl>=3.1", "xlrd>=2.0"]
+dev = ["pytest>=7.4", "pytest-cov>=4.1"]
+
+[project.scripts]
+mmfusion-splits    = "mmfusion.cli.make_splits:main"
+mmfusion-binarise  = "mmfusion.cli.binarise_labels:main"
+mmfusion-train-mil = "mmfusion.cli.train_mil:main"
+mmfusion-train     = "mmfusion.cli.train_fusion:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: end-to-end pipeline parity runs (seconds, not milliseconds)"]

@@ -1,0 +1,1343 @@
+{
+ "journal": "JCO Clinical Cancer Informatics",
+ "title": "Label composition explains whether histology outperforms routine clinicopathological variables: a controlled comparison of four breast cancer risk signatures",
+ "authors": [
+  {
+   "name": "Yaqeen Ali",
+   "aff": [
+    1,
+    2,
+    3
+   ],
+   "corresponding": true,
+   "email": "yaqeenali786@gmail.com"
+  },
+  {
+   "name": "Johannes Gregori",
+   "aff": [
+    1,
+    3
+   ]
+  }
+ ],
+ "affiliations": [
+  "Darmstadt University of Applied Sciences, Darmstadt, Germany",
+  "Doctoral Center Applied Informatics, Darmstadt, Germany",
+  "mediri GmbH, Heidelberg, Germany"
+ ],
+ "abstract": "Deep learning on hematoxylin and eosin sections predicts the Oncotype DX recurrence score beyond routine clinicopathological variables, but whether this extends to other genomic risk signatures is untested under a common design. We hypothesized that the margin by which histology outperforms routine variables is governed by label composition — how much of each binary label estrogen receptor (ER) status already explains — a property of the target, not of the imaging model. Recomputed Oncotype DX, MammaPrint, and PAM50 ROR-S and ROR-P signatures were predicted from UNI patch embeddings by gated-attention multiple-instance learning in 82 patients from The Cancer Genome Atlas, under one shared five-fold partition and configuration, and compared on identical folds by paired bootstrap against ER status alone and a six-variable clinicopathological model. Label composition was quantified as the area under the curve (AUC) of ER status alone against each label. Discrimination against chance ranged from AUC 0.744 to 0.892, but the margin over the clinicopathological model ran in almost the opposite order: Oncotype +0.280 (95% CI, 0.133 to 0.435), ROR-P +0.160 (0.012 to 0.300), ROR-S +0.124 (0.013 to 0.246), and MammaPrint −0.042 (−0.134 to 0.034); only Oncotype survived multiplicity adjustment. The ordering was that of the ER-alone AUC (0.582, 0.610, 0.672, and 0.850), as the score definitions predict; the margin fell monotonically with that AUC across seven label definitions and was stable across five partition draws. A pre-extracted radiomic feature arm on the same folds showed non-nested selection inflating AUC by up to 0.121. Whether histology outperforms routine clinicopathological variables is predictable from the labels alone. Studies predicting genomic signatures from images should report label composition and benchmark against clinicopathological variables, not chance.",
+ "abstract_structured": [
+  [
+   "PURPOSE",
+   "Deep learning on hematoxylin and eosin sections predicts the Oncotype DX recurrence score beyond routine clinicopathological variables, but whether this extends to other genomic risk signatures is untested under a common design. We hypothesized that the margin by which histology outperforms routine variables is governed by label composition — how much of each binary label estrogen receptor (ER) status already explains — a property of the target, not of the imaging model."
+  ],
+  [
+   "METHODS",
+   "Recomputed Oncotype DX, MammaPrint, and PAM50 ROR-S and ROR-P signatures were predicted from UNI patch embeddings by gated-attention multiple-instance learning in 82 patients from The Cancer Genome Atlas, under one shared five-fold partition and configuration, and compared on identical folds by paired bootstrap against ER status alone and a six-variable clinicopathological model. Label composition was quantified as the area under the curve (AUC) of ER status alone against each label."
+  ],
+  [
+   "RESULTS",
+   "Discrimination against chance ranged from AUC 0.744 to 0.892, but the margin over the clinicopathological model ran in almost the opposite order: Oncotype +0.280 (95% CI, 0.133 to 0.435), ROR-P +0.160 (0.012 to 0.300), ROR-S +0.124 (0.013 to 0.246), and MammaPrint −0.042 (−0.134 to 0.034); only Oncotype survived multiplicity adjustment. The ordering was that of the ER-alone AUC (0.582, 0.610, 0.672, and 0.850), as the score definitions predict; the margin fell monotonically with that AUC across seven label definitions and was stable across five partition draws. A pre-extracted radiomic feature arm on the same folds showed non-nested selection inflating AUC by up to 0.121."
+  ],
+  [
+   "CONCLUSION",
+   "Whether histology outperforms routine clinicopathological variables is predictable from the labels alone. Studies predicting genomic signatures from images should report label composition and benchmark against clinicopathological variables, not chance."
+  ]
+ ],
+ "abstract_words": 275,
+ "keywords": [
+  "Computational pathology",
+  "Multiple instance learning",
+  "Breast cancer",
+  "Gene expression signatures",
+  "Model benchmarking",
+  "Cross-validation"
+ ],
+ "sections": [
+  {
+   "h": "Introduction",
+   "paras": [
+    "Multigene expression assays guide adjuvant treatment in early-stage breast cancer. The 21-gene recurrence score (Oncotype DX) [1] and the 70-gene signature (MammaPrint) [2] identify patients in whom chemotherapy can be safely omitted, as shown prospectively by TAILORx [3] and MINDACT [4], and the PAM50 risk-of-recurrence scores provide subtype-based and proliferation-weighted estimates [5]. Cost and turnaround time limit access.",
+    "Deep learning on hematoxylin and eosin (H&E) whole-slide images recovers hormone receptor status, HER2 status and intrinsic subtype [6–8]. For Oncotype DX the question is largely settled: Goyal et al reported an image model at AUC 0.87 against a clinicopathological model's 0.83 in 950 patients with external validation in 405 [9]; Boehm et al, in 6,172 patients, reported AUC 0.89 for a multimodal model against 0.73 for a clinicopathological nomogram [10]; and Shamai et al, with a multimodal model fine-tuned on the TAILORx trial and validated in six external cohorts, reported AUC 0.898 for high genomic risk [11]. Morphology carries recurrence-score information routine variables do not.",
+    "Whether this generalizes across signatures is not known, and the construction of the scores suggests that it should not. The recurrence score weights a five-gene proliferation group most heavily and enters a four-gene ER group with a negative coefficient [1]; in a predominantly ER-positive cohort, ER-group expression varies little between patients, so the variation that decides the High or Intermediate versus Low call is largely proliferative and only weakly tied to ER status. The 70-gene signature classifies by correlation with a good-prognosis profile that ER-negative tumors rarely meet — in MINDACT, hormone receptor–negative tumors were almost uniformly genomically high risk [4] — so its binary label in a mixed cohort is close to a restatement of ER status. The PAM50 scores lie between: the subtype-only score (ROR-S) draws on correlation with the basal-like and HER2-enriched centroids, which track ER-negative disease, whereas the proliferation-weighted score (ROR-P) adds within-luminal variation that is independent of ER status [5]. Because ER status is in every pathology report and visible on H&E, a label that nearly restates it offers an image model little to learn that a clinician does not already have, however high the AUC. The expected ordering of the histology margin over routine variables therefore follows from the score definitions alone — smallest for MammaPrint, intermediate for ROR-S, largest for ROR-P and Oncotype — whereas its magnitude does not.",
+    "Testing this requires a constant design, and two common choices prevent it. Selecting hyperparameters separately for each target while held-out performance is visible turns the reported figure into the maximum over a search [12, 13], and evaluating targets on different partitions of the same patients confounds target with split; neither is detectable from a methods section. A second modality is available for this cohort: Li et al extracted 36 dynamic contrast-enhanced MRI radiomic features for the same patients [14]. We include them not to test whether MRI predicts the signatures but as a methodological control — to measure, on the same folds, how much of an apparent radiomics signal is an artifact of the non-nested feature selection that such pipelines commonly use [15].",
+    "We therefore compared four recomputed signatures under one design — one shared partition, one pre-fixed configuration, one model — benchmarked each against ER status alone and a clinicopathological model, quantified label composition, tested whether histology adds to the clinical variables and measured the cost of non-nested selection in the radiomic feature arm."
+   ]
+  },
+  {
+   "h": "Methods",
+   "paras": [],
+   "subs": [
+    {
+     "h": "Study design and cohort",
+     "paras": [
+      "This retrospective model-development study uses public, de-identified data and required no ethical approval; reporting follows TRIPOD+AI [16] (checklist in the Data Supplement). The cohort is the breast radiogenomics subset of The Cancer Genome Atlas [17] assembled by Li et al [14], for which recomputed signature scores have been published. Of 100 patients with recomputed scores, 83 also had a diagnostic whole-slide image with extracted features; one who had received neoadjuvant chemotherapy was excluded before any partition was drawn, leaving 82 (Fig S1). Follow-up comprises three recurrences and one death over a median of 42 months, so no survival or chemotherapy-benefit analysis is attempted."
+     ]
+    },
+    {
+     "h": "Prediction targets",
+     "paras": [
+      "The targets are genefu-style recomputations from expression data [18] of the 21-gene recurrence score (GHI-RS), the 70-gene signature correlation (NKI70), and the PAM50 ROR-S and ROR-P scores. Binary labels follow the published group calls: GHI High or Intermediate versus Low; NKI70 Good versus Bad; ROR high or medium versus low. These are research recomputations, not commercial assay results or patient outcomes; every claim is at that level."
+     ]
+    },
+    {
+     "h": "Slide processing and model",
+     "paras": [
+      "Whole-slide images were segmented, tiled into non-overlapping 256-pixel patches at 20× and encoded into 1,024-dimensional embeddings by the UNI foundation model [19] using the Trident toolkit [20]; this step was carried out beforehand as preparatory work in our group; no image processing method was developed here, and everything downstream was performed in this study. Each slide (median 19,376 patches, range 3,334 to 32,498) was reduced once, with a recorded seed, to a fixed pool of 512 patches, equalizing bag size and making evaluation deterministic (Fig 1a). A gated attention-based multiple-instance model [21] pools patch embeddings into a slide representation from which a regression head predicts the continuous score (Fig 1b); training details are in the Data Supplement."
+     ]
+    },
+    {
+     "h": "Partition and configuration",
+     "paras": [
+      "A single five-fold partition was drawn by multi-label stratification [22], balanced on all four binary targets and on ER status, and used identically by every target (Fig 1c). An inner three-fold split, drawn the same way within each training set, supplied the validation fold: each outer fold trained on 42 to 44 patients, selected its epoch on 21 to 23 and was scored on 15 to 18 never seen during training or selection. The configuration was fixed before the confirmatory run and is the same for every target; it is the setting shared by the majority of four earlier per-target pipelines, which had been tuned with held-out performance visible, so the rule removes dependence on this study's measured performance and on target-specific tuning, not every prior look at the data."
+     ]
+    },
+    {
+     "h": "Comparators",
+     "paras": [
+      "Two comparators were evaluated on the same folds. ER status alone is a single fixed binary predictor, oriented a priori so that ER-positive disease predicts the low-risk class, needing no fitting. The second is a six-variable logistic regression on age, ER, progesterone receptor and HER2 status, nodal status and ordinal AJCC stage — the routine variables available here; grade and Ki-67 are not in the public extract — L2-penalized at C = 1, pre-declared, trained on the remaining folds and used to predict each held-out fold. HER2 followed ASCO/CAP order [23]; one patient with uninformative HER2 testing is excluded from comparisons (n = 81). As a sensitivity analysis the penalty was instead chosen by inner cross-validation, and the apparent (in-sample) AUC was recorded. To test whether histology adds to rather than matches the clinical variables, the out-of-fold histology score was entered as a seventh variable into the tuned model, refitted inside each fold, and its association was also tested on the full data by likelihood-ratio test (odds ratio per SD); events per variable are reported for every fitted comparator [24]."
+     ]
+    },
+    {
+     "h": "Pre-extracted radiomic feature arm",
+     "paras": [
+      "The 36 DCE-MRI radiomic features of Li et al [14] were used as published; no image analysis was performed. Median imputation, standardization, univariate F-test filtering and L2-penalized logistic regression were fitted inside each training fold, with the number of features and the penalty chosen by inner cross-validation; the non-nested procedure, choosing them on all the data before the same cross-validation, was reproduced to measure its optimism. No clinicopathological comparator is reported for this arm, because the nested AUCs are at or near chance."
+     ]
+    },
+    {
+     "h": "Statistical analysis",
+     "paras": [
+      "Label orientation was fixed a priori from the sign of the correlation between the continuous target and its binary label. Discrimination is reported as the AUC on pooled held-out predictions, with per-fold means and SDs alongside; pooling ranks every patient against every other, so a comparator refitted per fold can score below chance pooled but not per fold [25]. Confidence intervals are percentile intervals from 4,000 bootstrap resamples; differences between a model and a comparator use a paired bootstrap with a two-sided empirical p value, adjusted across the four targets by Holm's procedure [26]. Label composition is the AUC of ER status alone against each label (the balanced accuracy of ER as a classifier of it), with Cohen's κ alongside, both model-free; proportion agreement is not used because prevalence dominates it. Three alternative binarization cuts of the same scores were evaluated on the same predictions. The whole pipeline was rerun under five independently drawn partitions, as in our earlier multi-seed evaluations [27], to measure how much the estimates move with the split. The minimum detectable difference between two AUCs on the same patients was computed from the Hanley–McNeil standard error [28, 29] (assumptions in the Data Supplement). Analyses used Python 3.11, PyTorch 2.14, scikit-learn 1.8 and statsmodels 0.15."
+     ]
+    }
+   ]
+  },
+  {
+   "h": "Results",
+   "paras": [],
+   "subs": [
+    {
+     "h": "Cohort",
+     "paras": [
+      "The 82 analyzed patients had a median age of 53 years (IQR 45 to 63); 71 (87%) were ER-positive, 65 (79%) HER2-negative and 65 (79%) PR-positive; 41 (50%) were node-positive; 71 (87%) had invasive ductal carcinoma; and 53 (65%) were PAM50 luminal A (Table 1)."
+     ]
+    },
+    {
+     "h": "Discrimination against chance",
+     "paras": [
+      "All four models discriminated against chance: pooled held-out AUC was 0.892 for MammaPrint, 0.834 for ROR-S, 0.815 for ROR-P and 0.744 for Oncotype, with Pearson correlations to the continuous score of 0.766, 0.695, 0.589 and 0.449 (Table 2; calibration and per-fold stability in Table S1)."
+     ]
+    },
+    {
+     "h": "Discrimination against routine clinicopathological variables",
+     "paras": [
+      "Against the pre-declared clinical model the ordering nearly reverses (Table 2, Fig 2a). That model alone reached out-of-fold AUC 0.464 for Oncotype, 0.655 for ROR-P, 0.710 for ROR-S and 0.934 for MammaPrint. Oncotype gains the most, +0.280 AUC (95% CI, 0.133 to 0.435; p < 0.001), followed by ROR-P at +0.160 (0.012 to 0.300; p = 0.036) and ROR-S at +0.124 (0.013 to 0.246; p = 0.028). After Holm adjustment only the Oncotype margin remains significant (p = 0.001; ROR-P and ROR-S p = 0.084). MammaPrint gains nothing: −0.042 (−0.134 to 0.034; p = 0.313), so the clinicopathological model numerically exceeded the imaging model and the interval excludes any gain larger than 0.034. With the penalty tuned by inner cross-validation (Table 3, Fig 2a) the margins were +0.249 (0.090 to 0.416; p = 0.002), +0.173 (0.025 to 0.314; p = 0.020), +0.088 (−0.012 to 0.194; p = 0.090) and −0.042: the same conclusions under either comparator.",
+      "The Oncotype comparator is below chance under both penalties (per-fold 0.427 ± 0.269 when tuned) although its apparent AUC on all 81 patients is 0.721: six variables estimated from 14 minority-class cases fit the training folds and carry nothing to the held-out ones. The routine variables contain no transferable information about the Oncotype label here; they do not predict it inversely."
+     ]
+    },
+    {
+     "h": "Incremental value over the clinicopathological model",
+     "paras": [
+      "Outperforming the clinical variables is not the same as adding to them (Table 3). For ROR-P the combined model improved on the clinical model by +0.138 AUC (0.014 to 0.262; p = 0.029; Holm p = 0.114) and the histology score remained strongly associated with the label after adjustment (odds ratio 3.35 per SD, 1.53 to 7.32; p < 0.001). For ROR-S the adjusted association was of the same size (3.34, 1.25 to 8.88; p = 0.007) but the cross-validated increment was small (+0.043, −0.020 to 0.114; p = 0.198). For Oncotype and MammaPrint the question is not answerable: with 14 minority-class cases a seven-variable model has two events per variable, the Oncotype combined model was no better than the clinical model (−0.020, −0.161 to 0.133) with an uninformative adjusted odds ratio (1.43, 0.66 to 3.07; p = 0.365), and the MammaPrint combined model matched a clinical model that already reaches AUC 0.934 (−0.016, −0.054 to 0.018). For those two targets only the head-to-head comparison is supported."
+     ]
+    },
+    {
+     "h": "Label composition",
+     "paras": [
+      "The explanation for the ordering lies in the labels (Table 4, Fig 2b). ER status alone, as a fixed predictor, reaches AUC 0.850 against the MammaPrint label (κ = 0.764), 0.672 against ROR-S (κ = 0.388), 0.610 against ROR-P (κ = 0.178) and 0.582 against Oncotype (κ = 0.064) — the order anticipated from the score definitions — and the histology margin rises in exactly that order, from −0.042 to +0.280.",
+      "Because the published group calls are arbitrary cuts, three alternative cuts were evaluated on the same predictions. Moving the Oncotype cut to High versus Intermediate or Low leaves ER weakly informative (AUC 0.590, κ = 0.098) and the margin large (+0.192, 0.058 to 0.340; p = 0.005). Moving the ROR cuts to high versus medium or low makes both labels far more ER-like — ER alone reaches 0.740 against ROR-P (κ = 0.511) and 0.826 against ROR-S (κ = 0.726) — and the margins collapse to +0.036 (−0.057 to 0.145; p = 0.493) and −0.030 (−0.094 to 0.025; p = 0.304) while raw discrimination against those labels rises to 0.897 and 0.928. Across all seven label definitions the margin falls monotonically as the AUC of ER alone rises. Seven points from one cohort do not establish a law; what they show is that label composition predicted whether histology outperformed routine variables here, and that changing one signature's cut moved it across that line."
+     ]
+    },
+    {
+     "h": "Within ER-positive disease, robustness, and the radiomic feature arm",
+     "paras": [
+      "Within ER-positive, HER2-negative disease (n = 56) the clinicopathological model for Oncotype falls to AUC 0.279 (0.297 with tuned penalty) while the histology model retains 0.673; ROR-P is stable under restriction (0.815 to 0.756), ROR-S degrades (0.834 to 0.673), and MammaPrint is not evaluable because all 56 patients share one label (Table S2). Rerunning the whole pipeline under five independent partitions (Table S5) left the margin stable — +0.213 ± 0.051 for Oncotype, +0.199 ± 0.045 for ROR-P, +0.111 ± 0.046 for ROR-S and −0.006 ± 0.048 for MammaPrint; the first three positive in all five draws, the last straddling zero (positive in two of five) — so the ordering and the MammaPrint null are properties of the design, not of one split. In the radiomic feature arm, nested cross-validation gave AUC 0.588 to 0.637 with three of four intervals including chance, and the non-nested procedure inflated it by +0.022 to +0.121 (Table S3). The earlier per-target pipelines, with their own partitions and tuning, had ordered the targets differently under the same comparator (Table S4); the shared design reordered them without new data or a better model."
+     ]
+    }
+   ]
+  },
+  {
+   "h": "Discussion",
+   "paras": [
+    "Across four recomputed genomic risk signatures evaluated under one design, whether histology outperformed six routine clinicopathological variables varied from a margin of +0.280 AUC to none at all, and the variation tracked label composition, not the imaging model. Against the MammaPrint label, which ER status alone predicts at AUC 0.850 and which is single-class within ER-positive, HER2-negative disease, a model achieving AUC 0.892 was still numerically behind six routine variables — a distinction invisible when performance is reported against chance. The direction was predictable from the score formulas, and the observed ordering of ER-alone AUC and of the histology margin is the predicted one; the magnitude was not predictable and is what the study measures.",
+    "Two questions are conflated easily. Whether an image model reaches the information in routine variables is a head-to-head comparison, which we pre-specified. Whether it adds to them needs a combined model, estimable at n = 81 only where the minority class allows: for the PAM50 scores the histology score stayed strongly associated after adjustment and for ROR-P the combined model also improved discrimination, whereas for Oncotype and MammaPrint, with 14 minority-class cases, neither the clinical nor a combined model can be estimated reliably, and our claims for those two targets are head-to-head claims only.",
+    "This complements the large Oncotype studies [9–11], which report a clear increment for the one signature whose label retains most variation within ER-positive disease, and suggests where the approach will not transfer. Three costless recommendations follow: report the AUC of receptor status alone against the binarized label, or κ, because it bounds what any model can contribute; benchmark against a clinicopathological model, not chance, and say whether the image model was compared with it or added to it; and when several targets are compared, share one partition and one configuration and nest all selection inside the training folds. The magnitudes involved are not a technicality: per-target partitioning and tuning reordered the four targets (Table S4), and in the radiomic feature arm — included as a methodological control, not as a competitor to histology — non-nested selection accounted for most of the apparent signal, showing that the selection bias long described in the literature [12, 13] and recently documented for pathology foundation models [30] is directly observable on the same data, at the 0.03 to 0.12 AUC scale at which increments are commonly reported."
+   ],
+   "subs": [
+    {
+     "h": "Limitations",
+     "paras": [
+      "The targets are research recomputations of signature scores, not commercial assay results and not patient outcomes; with three recurrences and one death, no prognostic or chemotherapy-benefit claim is made; clinical utility rests on the cohorts cited above. The cohort is small: the minimum detectable difference between two AUCs on the same patients is 0.135 to 0.154 depending on class balance and 0.165 to 0.221 in the ER-positive, HER2-negative subgroup, so only the Oncotype margin survives adjustment, the ROR-P and ROR-S margins are suggestive until replicated, and the confidence intervals rest on one pre-declared partition — stabilized but not narrowed by the five-partition repeat. The comparator lacks grade and Ki-67, so the Oncotype margin is against a weaker comparator than a full pathology report. Other limitations are the single cohort without external validation, a fixed 512-patch sample of each slide, a configuration inherited from pipelines that had seen these data, and the over-representation of ER-positive disease. The pathology-only arm can be extended to roughly 900 TCGA cases with no new data collection, at which point the minimum detectable difference falls to about 0.04 to 0.05 and the incremental question becomes answerable for every target.",
+      "In conclusion, whether deep learning on H&E outperforms routine clinicopathological variables differs sharply between genomic risk signatures, and the difference was governed by label composition. Discrimination against chance is not an informative endpoint; studies should report label composition, benchmark against a clinicopathological model and say whether the image model was compared with it or added to it, and nest all selection inside the training folds."
+     ]
+    }
+   ]
+  }
+ ],
+ "supplement": {
+  "title": "Data Supplement",
+  "sections": [
+   {
+    "h": "Supplementary Methods",
+    "paras": [],
+    "subs": [
+     {
+      "h": "S1. Model and training",
+      "paras": [
+       "Patch embeddings pass through a shared linear projection and a gated attention module producing one weight per patch; the attention-weighted mean is passed to a regression head predicting the continuous signature score. Training used AdamW at learning rate 1×10⁻⁴, weight decay 1×10⁻⁴, gradient-norm clipping at 1.0, batch size one, Huber loss and 20 epochs, with the reported epoch chosen by validation Pearson correlation; the fixed configuration is hidden width 1,024 and dropout 0.25. Patch standardization and target scaling were fitted on training folds only. The four earlier per-target pipelines from which this configuration was taken as the modal setting differed in width, dropout, weight decay, loss and selection rule and used a random patch subsample drawn at every access; the fixed 512-patch pool removes that divergence and the per-access randomness."
+      ]
+     },
+     {
+      "h": "S2. Partition",
+      "paras": [
+       "Multi-label stratification places patients one at a time, rarest label first, into whichever fold is furthest below its target count for that label, so every fold carries a similar positive rate for all four binary targets and for ER status simultaneously [22]; with four targets plus ER, an ordinary stratified split produces folds in which one target has a single-class test set. The inner three-fold split for epoch selection was drawn by the same procedure inside each training set."
+      ]
+     },
+     {
+      "h": "S3. Comparator sensitivity and incremental analyses",
+      "paras": [
+       "The tuned comparator chose the L2 penalty from C ∈ {0.01, 0.03, 0.1, 0.3, 1} by inner three-fold cross-validation within each training fold. The stacked model entered the out-of-fold histology score, standardized, as a seventh variable into the same tuned logistic model, refitted inside each fold, and was compared with the tuned clinical model by paired bootstrap on the same folds. Because that model must be estimated from few minority-class cases, the association was also tested on all 81 patients by a likelihood-ratio test for the histology score added to the six variables, reported as an odds ratio per standard deviation. Events per variable are the minority-class count divided by seven. The tuned penalty changed the Oncotype comparator from 0.464 to 0.495 and the ROR-S comparator from 0.710 to 0.746, and left ROR-P and MammaPrint essentially unchanged. For Oncotype the unadjusted association was present (odds ratio 1.93 per SD, 1.03 to 3.60; p = 0.033) but the adjusted one uninformative in either direction."
+      ]
+     },
+     {
+      "h": "S4. Minimum detectable difference",
+      "paras": [
+       "The minimum detectable difference between two AUCs measured on the same patients was computed from the Hanley–McNeil standard error [28, 29] assuming both AUCs near 0.80, a correlation of 0.5 between them, two-sided α = 0.05 and 80% power, at the observed class balance of each target: 0.135 to 0.154 in the full cohort, 0.165 to 0.221 in the ER-positive, HER2-negative subgroup, and about 0.04 to 0.05 at n ≈ 900 with the same class balance."
+      ]
+     },
+     {
+      "h": "S5. Repeated cross-validation",
+      "paras": [
+       "The entire locked pipeline — the same fixed configuration, model, fixed patch pools and fold-honest C = 1 clinicopathological comparator — was rerun under five independently drawn multi-label stratified five-fold partitions, changing only the seed that draws the outer partition and the inner epoch-selection split. The first seed is the locked seed, so repeat 0 reproduces the primary numbers exactly and serves as a check on the harness. This measures how much the point estimates move with the split; it adds no patients, so the confidence intervals and multiplicity adjustment of the primary analysis are unchanged."
+      ]
+     }
+    ]
+   },
+   {
+    "h": "Supplementary Results",
+    "paras": [],
+    "subs": [
+     {
+      "h": "S6. Calibration and stability",
+      "paras": [
+       "Calibration slopes for the continuous predictions were 0.658 (Oncotype), 0.815 (ROR-P), 0.983 (ROR-S) and 1.124 (MammaPrint) (Table S1). A slope below one means the predictions are spread more widely than the observed scores warrant — the over-dispersion expected of a model fitted to a small sample — so the Oncotype predictions are the least well calibrated and the MammaPrint predictions mildly compressed. Per-fold variability was modest for MammaPrint (AUC 0.955 ± 0.037) and larger for Oncotype (0.749 ± 0.105); per-fold SDs of 0.037 to 0.105 show that a single five-fold draw is a coarse instrument at this sample size. The MammaPrint per-fold mean sits above its pooled value because the predicted scale shifts between folds, a within-fold ranking that pooling penalizes."
+      ]
+     },
+     {
+      "h": "S7. Performance within ER-positive disease",
+      "paras": [
+       "Restriction to ER-positive, HER2-negative disease (n = 56) — the population in which Oncotype DX and the PAM50 scores are principally used, and most of the MammaPrint indication — applies to the evaluation set only; the models were developed on the full cohort, so these figures are not what a model developed within the indication would achieve (Table S2). This is the group in which the six variables carry least information, since two of them are constant within it, and it is where the morphological signal does the most work. Within ER-positive disease as a whole the MammaPrint AUC rests on four negatives."
+      ]
+     },
+     {
+      "h": "S8. Pre-extracted radiomic feature arm",
+      "paras": [
+       "Nested cross-validation gave AUC 0.593 for Oncotype (95% CI, 0.429 to 0.752), 0.628 for MammaPrint (0.454 to 0.790), 0.588 for ROR-P (0.454 to 0.721) and 0.637 for ROR-S (0.510 to 0.760); the non-nested procedure returned 0.656, 0.749, 0.610 and 0.692 on the same data, an optimism of +0.022 to +0.121 AUC (Table S3). Three of the four nested intervals include chance; the ROR-S interval sits just above it. The optimism was largest for MammaPrint. On this cohort the arm has at most a marginal signal, and most of the signal the conventional procedure reports is an artifact of selecting and scoring on the same data. The arm is a methodological control: its role is to show that the selection-bias magnitude described in the literature is directly observable on the same patients and folds as the histology analysis."
+      ]
+     },
+     {
+      "h": "S9. Effect of the design choices",
+      "paras": [
+       "Under the earlier per-target pipelines, with per-target partitions, per-target tuned hyperparameters and a random patch subsample at every access, the same comparator gave margins of +0.155 for Oncotype (−0.005 to 0.314; p = 0.057), +0.173 for ROR-P, +0.066 for ROR-S (−0.075 to 0.205; p = 0.349) and +0.014 for MammaPrint (−0.055 to 0.082; p = 0.673): Oncotype was a marginal result, ROR-S was null and MammaPrint showed a small positive margin. Under one shared partition, one configuration and a fixed patch pool, Oncotype became the strongest result, ROR-S gained a nominally significant margin, ROR-P was unchanged and MammaPrint's margin became negative (Table S4). Separately, nesting the radiomic feature selection removed most of that arm's apparent performance."
+      ]
+     },
+     {
+      "h": "S10. Repeated cross-validation",
+      "paras": [
+       "Across the five partitions the histology AUC and the margin over the clinicopathological model are given as mean ± SD with the range (Table S5). The Oncotype, ROR-P and ROR-S margins were positive in all five draws; the MammaPrint margin straddled zero, positive in two of five."
+      ]
+     }
+    ]
+   }
+  ],
+  "tables": [
+   {
+    "label": "Table S1",
+    "id": "tabS1",
+    "widths": [
+     1700,
+     2400,
+     2200,
+     1600,
+     1000
+    ],
+    "caption": "Agreement with the continuous score, per-fold stability and calibration (n = 82). Calibration is the regression of observed on predicted values: a slope below one means the predictions are spread more widely than the observed scores, a slope above one that they are compressed toward the mean.",
+    "headers": [
+     "Signature",
+     "Pearson r (95% CI)",
+     "AUC per fold (mean ± SD)",
+     "Calibration slope",
+     "Intercept"
+    ],
+    "rows": [
+     [
+      "Oncotype",
+      "0.449 (0.295–0.591)",
+      "0.749 ± 0.105",
+      "0.658",
+      "21.30"
+     ],
+     [
+      "ROR-P",
+      "0.589 (0.426–0.728)",
+      "0.844 ± 0.087",
+      "0.815",
+      "5.04"
+     ],
+     [
+      "ROR-S",
+      "0.695 (0.566–0.796)",
+      "0.843 ± 0.094",
+      "0.983",
+      "0.71"
+     ],
+     [
+      "MammaPrint",
+      "0.766 (0.644–0.848)",
+      "0.955 ± 0.037",
+      "1.124",
+      "0.00"
+     ]
+    ]
+   },
+   {
+    "label": "Table S2",
+    "id": "tabS2",
+    "widths": [
+     1300,
+     2600,
+     850,
+     1400,
+     1650,
+     1500
+    ],
+    "caption": "Performance restricted to ER-positive and ER-positive, HER2-negative disease. Restriction applies to the evaluation set only; models were developed on the full cohort. n (positives) per subgroup. Clinical AUCs are given for the pre-declared and the tuned comparator. “Not evaluable”: all 56 patients share one MammaPrint label, so no AUC is defined; the ER-positive MammaPrint row rests on four negatives.",
+    "headers": [
+     "Signature",
+     "Cohort",
+     "n (pos.)",
+     "Histology AUC",
+     "Clinical AUC, pre-declared",
+     "Clinical AUC, tuned"
+    ],
+    "rows": [
+     [
+      "Oncotype",
+      "All",
+      "81 (67)",
+      "0.744",
+      "0.464",
+      "0.495"
+     ],
+     [
+      "",
+      "ER-positive",
+      "70 (56)",
+      "0.708",
+      "0.367",
+      "0.403"
+     ],
+     [
+      "",
+      "ER-positive, HER2-negative",
+      "56 (43)",
+      "0.673",
+      "0.279",
+      "0.297"
+     ],
+     [
+      "ROR-P",
+      "All",
+      "81 (50)",
+      "0.815",
+      "0.655",
+      "0.642"
+     ],
+     [
+      "",
+      "ER-positive",
+      "70 (39)",
+      "0.770",
+      "0.558",
+      "0.541"
+     ],
+     [
+      "",
+      "ER-positive, HER2-negative",
+      "56 (30)",
+      "0.756",
+      "0.554",
+      "0.533"
+     ],
+     [
+      "ROR-S",
+      "All",
+      "81 (32)",
+      "0.834",
+      "0.710",
+      "0.746"
+     ],
+     [
+      "",
+      "ER-positive",
+      "70 (21)",
+      "0.763",
+      "0.558",
+      "0.612"
+     ],
+     [
+      "",
+      "ER-positive, HER2-negative",
+      "56 (13)",
+      "0.673",
+      "0.360",
+      "0.496"
+     ],
+     [
+      "MammaPrint",
+      "All",
+      "81 (67)",
+      "0.892",
+      "0.934",
+      "0.934"
+     ],
+     [
+      "",
+      "ER-positive",
+      "70 (66)",
+      "0.799",
+      "0.818",
+      "0.818"
+     ],
+     [
+      "",
+      "ER-positive, HER2-negative",
+      "56 (56)",
+      "not evaluable",
+      "not evaluable",
+      "not evaluable"
+     ]
+    ]
+   },
+   {
+    "label": "Table S3",
+    "id": "tabS3",
+    "widths": [
+     1900,
+     3000,
+     2200,
+     1700
+    ],
+    "caption": "Pre-extracted radiomic feature arm: nested versus conventional non-nested cross-validation, on the same patients and the same folds as the histology arm (n = 82). Three of the four nested intervals include chance; the ROR-S interval sits just above it. No clinicopathological comparator is reported for this arm because the nested AUCs are at or near chance, so a head-to-head comparison would be uninformative.",
+    "headers": [
+     "Target",
+     "Nested AUC (95% CI)",
+     "Non-nested AUC",
+     "Optimism"
+    ],
+    "rows": [
+     [
+      "Oncotype",
+      "0.593 (0.429–0.752)",
+      "0.656",
+      "+0.063"
+     ],
+     [
+      "MammaPrint",
+      "0.628 (0.454–0.790)",
+      "0.749",
+      "+0.121"
+     ],
+     [
+      "ROR-P",
+      "0.588 (0.454–0.721)",
+      "0.610",
+      "+0.022"
+     ],
+     [
+      "ROR-S",
+      "0.637 (0.510–0.760)",
+      "0.692",
+      "+0.054"
+     ]
+    ]
+   },
+   {
+    "label": "Table S4",
+    "id": "tabS4",
+    "widths": [
+     1300,
+     1300,
+     2900,
+     1300,
+     2900
+    ],
+    "caption": "Effect of the design choices: the earlier per-target pipelines against the locked design. Provisional: each target on its own cross-validation partition with its own tuned hyperparameters and a random patch subsample drawn at every access (n = 82, neoadjuvant case still included). Locked: one shared partition, one configuration, a fixed patch pool (n = 81). The comparator, HER2 rule, bootstrap and seed are identical in both columns; only the imaging-side design differs. Gain is over the pre-declared clinicopathological model.",
+    "headers": [
+     "Signature",
+     "Provisional AUC",
+     "Provisional gain (95% CI); p",
+     "Locked AUC",
+     "Locked gain (95% CI); p"
+    ],
+    "rows": [
+     [
+      "Oncotype",
+      "0.703",
+      "+0.155 (−0.005 to 0.314); 0.057",
+      "0.744",
+      "+0.280 (0.133 to 0.435); <0.001"
+     ],
+     [
+      "ROR-P",
+      "0.807",
+      "+0.173 (0.023 to 0.328); 0.027",
+      "0.815",
+      "+0.160 (0.012 to 0.300); 0.036"
+     ],
+     [
+      "ROR-S",
+      "0.779",
+      "+0.066 (−0.075 to 0.205); 0.349",
+      "0.834",
+      "+0.124 (0.013 to 0.246); 0.028"
+     ],
+     [
+      "MammaPrint",
+      "0.955",
+      "+0.014 (−0.055 to 0.082); 0.673",
+      "0.892",
+      "−0.042 (−0.134 to 0.034); 0.313"
+     ]
+    ]
+   },
+   {
+    "label": "Table S5",
+    "id": "tabS5",
+    "widths": [
+     1700,
+     3100,
+     3100,
+     1500
+    ],
+    "caption": "Repeated cross-validation. The entire locked pipeline — same fixed configuration, same model, same fixed patch pools, same fold-honest C = 1 clinicopathological comparator — was rerun under five independently drawn multi-label stratified five-fold partitions (n = 81); the first is the locked partition and reproduces the primary numbers exactly. Values are the mean ± SD across the five partitions with the range in brackets. This measures how much the point estimate moves with the split, not statistical significance, and does not add patients: the confidence intervals and multiplicity adjustment of Table 2 are unchanged.",
+    "headers": [
+     "Signature",
+     "Histology AUC, mean ± SD (range)",
+     "Gain over clinical, mean ± SD (range)",
+     "Draws with gain > 0"
+    ],
+    "rows": [
+     [
+      "Oncotype",
+      "0.718 ± 0.067 (0.633–0.814)",
+      "+0.213 ± 0.051 (+0.162 to +0.280)",
+      "5 / 5"
+     ],
+     [
+      "ROR-P",
+      "0.793 ± 0.016 (0.772–0.815)",
+      "+0.199 ± 0.045 (+0.145 to +0.249)",
+      "5 / 5"
+     ],
+     [
+      "ROR-S",
+      "0.791 ± 0.034 (0.744–0.834)",
+      "+0.111 ± 0.046 (+0.050 to +0.167)",
+      "5 / 5"
+     ],
+     [
+      "MammaPrint",
+      "0.903 ± 0.025 (0.877–0.941)",
+      "−0.006 ± 0.048 (−0.061 to +0.063)",
+      "2 / 5"
+     ]
+    ]
+   }
+  ],
+  "figures": [
+   {
+    "label": "Fig S1",
+    "file": "FigS1.png",
+    "caption": "Cohort flow. The analysis cohort is the intersection of two lists: patients with recomputed signature scores and patients with extracted whole-slide features. Neither can be enlarged from the available data."
+   }
+  ]
+ },
+ "declarations": [
+  [
+   "Support",
+   "[to complete]"
+  ],
+  [
+   "Authors' disclosures of potential conflicts of interest",
+   "[to complete]"
+  ],
+  [
+   "Author contributions",
+   "Conception and design: Yaqeen Ali, Johannes Gregori. Data processing, analysis and software: Yaqeen Ali. Manuscript writing: Yaqeen Ali. Critical revision and supervision: Johannes Gregori. Final approval: all authors."
+  ],
+  [
+   "Acknowledgments",
+   "We thank Vincenzo Della Mea (University of Udine) for providing the curated clinical data file for this cohort."
+  ],
+  [
+   "Ethics",
+   "Not required; the analysis uses public, de-identified data from The Cancer Genome Atlas."
+  ],
+  [
+   "Data sharing statement",
+   "Whole-slide images and clinical data are available through the NCI Genomic Data Commons and MRI data through The Cancer Imaging Archive; recomputed signature scores derive from published expression data [14]. All analysis code, the locked run manifest (seeds, configuration, package versions) and the derived result tables are available at [repository URL]."
+  ]
+ ],
+ "references": [
+  "Paik S, Shak S, Tang G, et al: A multigene assay to predict recurrence of tamoxifen-treated, node-negative breast cancer. N Engl J Med 351:2817-2826, 2004",
+  "van 't Veer LJ, Dai H, van de Vijver MJ, et al: Gene expression profiling predicts clinical outcome of breast cancer. Nature 415:530-536, 2002",
+  "Sparano JA, Gray RJ, Makower DF, et al: Adjuvant chemotherapy guided by a 21-gene expression assay in breast cancer. N Engl J Med 379:111-121, 2018",
+  "Cardoso F, van 't Veer LJ, Bogaerts J, et al: 70-gene signature as an aid to treatment decisions in early-stage breast cancer. N Engl J Med 375:717-729, 2016",
+  "Parker JS, Mullins M, Cheang MCU, et al: Supervised risk predictor of breast cancer based on intrinsic subtypes. J Clin Oncol 27:1160-1167, 2009",
+  "Couture HD, Williams LA, Geradts J, et al: Image analysis with deep learning to predict breast cancer grade, ER status, histologic subtype, and intrinsic subtype. NPJ Breast Cancer 4:30, 2018",
+  "Naik N, Madani A, Esteva A, et al: Deep learning-enabled breast cancer hormonal receptor status determination from base-level H&E stains. Nat Commun 11:5727, 2020",
+  "La Barbera D, Polónia A, Roitero K, et al: Detection of HER2 from haematoxylin-eosin slides through a cascade of deep learning classifiers via multi-instance learning. J Imaging 6:82, 2020",
+  "Goyal M, Marotti JD, Workman AA, et al: A multi-model approach integrating whole-slide imaging and clinicopathologic features to predict breast cancer recurrence risk. NPJ Breast Cancer 10:93, 2024",
+  "Boehm KM, El Nahhas OSM, Marra A, et al: Multimodal histopathologic models stratify hormone receptor-positive early breast cancer. Nat Commun 16:2106, 2025",
+  "Shamai G, Cohen S, Binenbaum Y, et al: Deep learning on histopathological images to predict breast cancer recurrence risk and chemotherapy benefit: a multicentre, model development and validation study. Lancet Oncol, 2026. doi:10.1016/S1470-2045(25)00727-2",
+  "Varma S, Simon R: Bias in error estimation when using cross-validation for model selection. BMC Bioinformatics 7:91, 2006",
+  "Cawley GC, Talbot NLC: On over-fitting in model selection and subsequent selection bias in performance evaluation. J Mach Learn Res 11:2079-2107, 2010",
+  "Li H, Zhu Y, Burnside ES, et al: MR imaging radiomics signatures for predicting the risk of breast cancer recurrence as given by research versions of MammaPrint, Oncotype DX, and PAM50 gene assays. Radiology 281:382-391, 2016",
+  "Tareke TW, Payan N, Cochet A, et al: Automated radiomics analysis from multi-modal image segmentation for predicting triple negative breast cancer. Annu Int Conf IEEE Eng Med Biol Soc, 2025. doi:10.1109/EMBC58623.2025.11252611",
+  "Collins GS, Moons KGM, Dhiman P, et al: TRIPOD+AI statement: Updated guidance for reporting clinical prediction models that use regression or machine learning methods. BMJ 385:e078378, 2024",
+  "The Cancer Genome Atlas Network: Comprehensive molecular portraits of human breast tumours. Nature 490:61-70, 2012",
+  "Gendoo DMA, Ratanasirigulchai N, Schröder MS, et al: Genefu: An R/Bioconductor package for computation of gene expression-based signatures in breast cancer. Bioinformatics 32:1097-1099, 2016",
+  "Chen RJ, Ding T, Lu MY, et al: Towards a general-purpose foundation model for computational pathology. Nat Med 30:850-862, 2024",
+  "Zhang A, Jaume G, Vaidya A, et al: Accelerating data processing and benchmarking of AI models for pathology. arXiv:2502.06750, 2025",
+  "Ilse M, Tomczak JM, Welling M: Attention-based deep multiple instance learning. Proc Mach Learn Res 80:2127-2136, 2018",
+  "Sechidis K, Tsoumakas G, Vlahavas I: On the stratification of multi-label data. Lect Notes Comput Sci 6913:145-158, 2011",
+  "Wolff AC, Hammond MEH, Allison KH, et al: Human epidermal growth factor receptor 2 testing in breast cancer: American Society of Clinical Oncology/College of American Pathologists clinical practice guideline focused update. J Clin Oncol 36:2105-2122, 2018",
+  "Peduzzi P, Concato J, Kemper E, et al: A simulation study of the number of events per variable in logistic regression analysis. J Clin Epidemiol 49:1373-1379, 1996",
+  "Forman G, Scholz M: Apples-to-apples in cross-validation studies: Pitfalls in classifier performance measurement. ACM SIGKDD Explor Newsl 12:49-57, 2010",
+  "Holm S: A simple sequentially rejective multiple test procedure. Scand J Stat 6:65-70, 1979",
+  "Ali Y, Müller J, Weinmann A, et al: Performance of federated versus centralized learning for mammography classification across film-digital domain shift. Front Digit Health, 2026. doi:10.3389/fdgth.2026.1715858",
+  "Hanley JA, McNeil BJ: The meaning and use of the area under a receiver operating characteristic (ROC) curve. Radiology 143:29-36, 1982",
+  "Hanley JA, McNeil BJ: A method of comparing the areas under receiver operating characteristic curves derived from the same cases. Radiology 148:839-843, 1983",
+  "Akebli H, Della Mea V: Domain generalization of histopathology foundation models in multicenter, multi-scanner cohorts: A comparative benchmark. J Imaging 12:381, 2026"
+ ],
+ "reference_keys": [
+  "paik2004",
+  "vantveer2002",
+  "sparano2018",
+  "cardoso2016",
+  "parker2009",
+  "couture2018",
+  "naik2020",
+  "labarbera2020",
+  "goyal2024",
+  "boehm2025",
+  "shamai2026",
+  "varma2006",
+  "cawley2010",
+  "li2016",
+  "tareke2025",
+  "collins2024",
+  "tcga2012",
+  "gendoo2016",
+  "chen2024",
+  "zhang2025",
+  "ilse2018",
+  "sechidis2011",
+  "wolff2018",
+  "peduzzi1996",
+  "forman2010",
+  "holm1979",
+  "ali2026",
+  "hanley1982",
+  "hanley1983",
+  "akebli2026"
+ ],
+ "tables": [
+  {
+   "label": "Table 1",
+   "id": "tab1",
+   "widths": [
+    3400,
+    1500,
+    1800,
+    1800
+   ],
+   "caption": "Cohort characteristics, overall and by the ROR-P label. Median [IQR] for age, n (%) otherwise. HER2 follows ASCO/CAP order: FISH where informative, otherwise immunohistochemistry. No significance tests are reported, because the groups are defined by a computed score rather than by an exposure.",
+   "headers": [
+    "Characteristic",
+    "All (n = 82)",
+    "ROR-P low (n = 32)",
+    "ROR-P high (n = 50)"
+   ],
+   "rows": [
+    {
+     "indent": false,
+     "cells": [
+      "Age at diagnosis, years",
+      "53 [45–63]",
+      "52 [45–63]",
+      "54 [46–62]"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Menopausal status",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Postmenopausal",
+      "43 (52%)",
+      "14 (44%)",
+      "29 (58%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Premenopausal",
+      "31 (38%)",
+      "13 (41%)",
+      "18 (36%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Perimenopausal",
+      "5 (6%)",
+      "3 (9%)",
+      "2 (4%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Unknown",
+      "2 (2%)",
+      "2 (6%)",
+      "0 (0%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Indeterminate",
+      "1 (1%)",
+      "0 (0%)",
+      "1 (2%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "ER status",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Positive",
+      "71 (87%)",
+      "32 (100%)",
+      "39 (78%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Negative",
+      "11 (13%)",
+      "0 (0%)",
+      "11 (22%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "PR status",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Positive",
+      "65 (79%)",
+      "31 (97%)",
+      "34 (68%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Negative",
+      "17 (21%)",
+      "1 (3%)",
+      "16 (32%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "HER2 status (ASCO/CAP)",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Negative",
+      "65 (79%)",
+      "26 (81%)",
+      "39 (78%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Positive",
+      "16 (20%)",
+      "5 (16%)",
+      "11 (22%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Unknown",
+      "1 (1%)",
+      "1 (3%)",
+      "0 (0%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "AJCC pathologic stage",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage I",
+      "15 (18%)",
+      "7 (22%)",
+      "8 (16%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage IA",
+      "3 (4%)",
+      "2 (6%)",
+      "1 (2%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage II",
+      "1 (1%)",
+      "0 (0%)",
+      "1 (2%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage IIA",
+      "35 (43%)",
+      "10 (31%)",
+      "25 (50%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage IIB",
+      "18 (22%)",
+      "10 (31%)",
+      "8 (16%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage IIIA",
+      "6 (7%)",
+      "3 (9%)",
+      "3 (6%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Stage IIIC",
+      "4 (5%)",
+      "0 (0%)",
+      "4 (8%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Nodal status",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Node negative",
+      "41 (50%)",
+      "14 (44%)",
+      "27 (54%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Node positive",
+      "41 (50%)",
+      "18 (56%)",
+      "23 (46%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Histology",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Invasive ductal",
+      "71 (87%)",
+      "26 (81%)",
+      "45 (90%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Invasive lobular",
+      "9 (11%)",
+      "4 (12%)",
+      "5 (10%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Other",
+      "1 (1%)",
+      "1 (3%)",
+      "0 (0%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Mixed",
+      "1 (1%)",
+      "1 (3%)",
+      "0 (0%)"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "PAM50 subtype",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "LumA",
+      "53 (65%)",
+      "29 (91%)",
+      "24 (48%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "LumB",
+      "10 (12%)",
+      "0 (0%)",
+      "10 (20%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Her2",
+      "5 (6%)",
+      "0 (0%)",
+      "5 (10%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Basal",
+      "10 (12%)",
+      "0 (0%)",
+      "10 (20%)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Normal",
+      "4 (5%)",
+      "3 (9%)",
+      "1 (2%)"
+     ]
+    }
+   ],
+   "structured": true
+  },
+  {
+   "label": "Table 2",
+   "id": "tab2",
+   "widths": [
+    1800,
+    1950,
+    850,
+    950,
+    2250,
+    700,
+    800
+   ],
+   "caption": "Primary endpoint: histology against chance, against ER status alone and against the pre-declared six-variable clinicopathological model (L2-penalized logistic regression, C = 1), all on pooled held-out predictions. ER alone is a fixed binary predictor oriented a priori (ER-positive predicts the low-risk class). n = 81 with complete covariates; paired bootstrap, 4,000 resamples; Holm adjustment across the four targets. Rows are ordered by the gain column, which runs in almost the opposite order to raw AUC.",
+   "headers": [
+    "Signature",
+    "Histology AUC (95% CI)",
+    "ER alone",
+    "Clinical",
+    "Gain over clinical (95% CI)",
+    "p",
+    "Holm p"
+   ],
+   "rows": [
+    [
+     "Oncotype (GHI-RS)",
+     "0.744 (0.631–0.846)",
+     "0.582",
+     "0.464",
+     "+0.280 (0.133 to 0.435)",
+     "<0.001",
+     "0.001"
+    ],
+    [
+     "PAM50 ROR-P",
+     "0.815 (0.718–0.900)",
+     "0.610",
+     "0.655",
+     "+0.160 (0.012 to 0.300)",
+     "0.036",
+     "0.084"
+    ],
+    [
+     "PAM50 ROR-S",
+     "0.834 (0.727–0.921)",
+     "0.672",
+     "0.710",
+     "+0.124 (0.013 to 0.246)",
+     "0.028",
+     "0.084"
+    ],
+    [
+     "MammaPrint (NKI70)",
+     "0.892 (0.770–0.980)",
+     "0.850",
+     "0.934",
+     "−0.042 (−0.134 to 0.034)",
+     "0.313",
+     "0.313"
+    ]
+   ]
+  },
+  {
+   "label": "Table 3",
+   "id": "tab3",
+   "widths": [
+    2900,
+    1600,
+    1600,
+    1600,
+    1600
+   ],
+   "caption": "Sensitivity to the comparator, and incremental value (n = 81). Events per variable: minority class ÷ 7, for a seven-term logistic model. Clinical model, penalty tuned: the six-variable model with its penalty chosen by inner three-fold cross-validation; the histology gain is against that comparator. Clinical model + histology score: the same model with the out-of-fold histology score as a seventh variable, refitted inside each fold, compared with the tuned clinical model. Adjusted association: odds ratio per SD of the histology score after adjustment for the six variables, fitted once on all 81 patients, with a likelihood-ratio test. Paired bootstrap, 4,000 resamples; Holm adjustment across the four targets.",
+   "headers": [
+    "",
+    "Oncotype",
+    "ROR-P",
+    "ROR-S",
+    "MammaPrint"
+   ],
+   "rows": [
+    {
+     "indent": false,
+     "cells": [
+      "Events per variable",
+      "2.0",
+      "4.4",
+      "4.6",
+      "2.0"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Clinical model, penalty tuned",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "AUC, pooled",
+      "0.495",
+      "0.642",
+      "0.746",
+      "0.934"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "AUC per fold, mean ± SD",
+      "0.427 ± 0.269",
+      "0.669 ± 0.142",
+      "0.735 ± 0.139",
+      "0.950 ± 0.056"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Histology gain (95% CI)",
+      "+0.249 (0.090 to 0.416)",
+      "+0.173 (0.025 to 0.314)",
+      "+0.088 (−0.012 to 0.194)",
+      "−0.042 (−0.134 to 0.034)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "p; Holm p",
+      "0.002; 0.008",
+      "0.020; 0.060",
+      "0.090; 0.179",
+      "0.313; 0.313"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Clinical model + histology score",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "AUC, pooled",
+      "0.474",
+      "0.781",
+      "0.789",
+      "0.918"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "AUC per fold, mean ± SD",
+      "0.563 ± 0.281",
+      "0.834 ± 0.121",
+      "0.818 ± 0.102",
+      "0.962 ± 0.054"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Incremental gain (95% CI)",
+      "−0.020 (−0.161 to 0.133)",
+      "+0.138 (0.014 to 0.262)",
+      "+0.043 (−0.020 to 0.114)",
+      "−0.016 (−0.054 to 0.018)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "p; Holm p",
+      "0.755; 0.755",
+      "0.029; 0.114",
+      "0.198; 0.593",
+      "0.336; 0.671"
+     ]
+    },
+    {
+     "indent": false,
+     "cells": [
+      "Adjusted association, full data",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Odds ratio per SD (95% CI)",
+      "1.43 (0.66 to 3.07)",
+      "3.35 (1.53 to 7.32)",
+      "3.34 (1.25 to 8.88)",
+      "1.40 (0.33 to 5.91)"
+     ]
+    },
+    {
+     "indent": true,
+     "cells": [
+      "Likelihood-ratio p; Holm p",
+      "0.365; 0.731",
+      "<0.001; 0.002",
+      "0.007; 0.020",
+      "0.640; 0.731"
+     ]
+    }
+   ],
+   "structured": true
+  },
+  {
+   "label": "Table 4",
+   "id": "tab4",
+   "widths": [
+    1500,
+    2500,
+    1200,
+    1100,
+    1000,
+    2000
+   ],
+   "caption": "Label composition — how much of each binary label is ER status — and the histology gain against it, for the four published group calls and three alternative cuts of the same scores (n = 81). AUC of ER alone is the balanced accuracy of ER status as a classifier of the label, with ER-positive assigned to the low-risk class a priori; κ is Cohen's kappa for the same agreement. Both are properties of the label, computed without any model. Gain is against the pre-declared clinicopathological model. “Alternative”: a cut of the same score other than the published group call, evaluated on the same predictions. Rows are ordered by the AUC of ER alone; the gain falls monotonically along them.",
+   "headers": [
+    "Target",
+    "Binary label",
+    "Positive / negative",
+    "AUC of ER alone",
+    "κ with ER",
+    "Gain over clinical; p"
+   ],
+   "rows": [
+    [
+     "Oncotype",
+     "High or Intermediate vs Low",
+     "67 / 14",
+     "0.582",
+     "0.064",
+     "+0.280; <0.001"
+    ],
+    [
+     "Oncotype",
+     "High vs Intermediate or Low (alternative)",
+     "61 / 20",
+     "0.590",
+     "0.098",
+     "+0.192; 0.005"
+    ],
+    [
+     "ROR-P",
+     "high or medium vs low",
+     "50 / 31",
+     "0.610",
+     "0.178",
+     "+0.160; 0.036"
+    ],
+    [
+     "ROR-S",
+     "high or medium vs low",
+     "32 / 49",
+     "0.672",
+     "0.388",
+     "+0.124; 0.028"
+    ],
+    [
+     "ROR-P",
+     "high vs medium or low (alternative)",
+     "13 / 68",
+     "0.740",
+     "0.511",
+     "+0.036; 0.493"
+    ],
+    [
+     "ROR-S",
+     "high vs medium or low (alternative)",
+     "15 / 66",
+     "0.826",
+     "0.726",
+     "−0.030; 0.304"
+    ],
+    [
+     "MammaPrint",
+     "Good vs Bad",
+     "67 / 14",
+     "0.850",
+     "0.764",
+     "−0.042; 0.313"
+    ]
+   ]
+  }
+ ],
+ "figures": [
+  {
+   "label": "Fig 1",
+   "file": "Fig1.png",
+   "caption": "Study design and model architecture. (a) Each diagnostic H&E whole-slide image is tiled at 20× and encoded by the UNI foundation model, then reduced once, with a seed recorded per slide, to a fixed pool of 512 patches. (b) A gated-attention multiple-instance model weights patches and pools them into a slide representation from which the continuous signature score is predicted. (c) All four signatures use one shared multi-label stratified five-fold partition. Histology is compared on identical folds against ER status alone and against a six-variable clinicopathological model by paired bootstrap; the pre-extracted radiomic feature arm is evaluated on the same folds under nested selection, with the non-nested procedure reproduced to measure its optimism."
+  },
+  {
+   "label": "Fig 2",
+   "file": "Fig2.png",
+   "caption": "The histology margin over the clinicopathological model, and what predicts it. (a) Gain in AUC over the six-variable model with 95% percentile intervals from a paired bootstrap of 4,000 resamples (n = 81), for the pre-declared comparator (filled) and the comparator with its penalty tuned by inner cross-validation (open). (b) The same gain against the AUC of ER status alone as a fixed predictor of each label — label composition — for the four published group calls (filled) and three alternative cuts of the same scores (open); vertical bars are the 95% intervals of the gain. The margin falls monotonically as the label becomes more nearly a restatement of ER status."
+  }
+ ]
+}

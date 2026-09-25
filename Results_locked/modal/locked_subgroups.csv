@@ -1,0 +1,13 @@
+assay,cohort,n,pos,AUC_model,AUC_clinical
+GHI (Oncotype),ALL,81,67,0.744,0.464
+GHI (Oncotype),ER+,70,56,0.708,0.367
+GHI (Oncotype),ER+/HER2-,56,43,0.673,0.279
+MammaPrint,ALL,81,67,0.892,0.934
+MammaPrint,ER+,70,66,0.799,0.818
+MammaPrint,ER+/HER2-,56,56,,
+ROR-P,ALL,81,50,0.815,0.655
+ROR-P,ER+,70,39,0.77,0.558
+ROR-P,ER+/HER2-,56,30,0.756,0.554
+ROR-S,ALL,81,32,0.834,0.71
+ROR-S,ER+,70,21,0.763,0.558
+ROR-S,ER+/HER2-,56,13,0.673,0.36
