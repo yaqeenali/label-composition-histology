@@ -33,7 +33,7 @@ Both are fixed here:
    Selection runs as an inner 3-fold CV over the outer fold's development set;
    the test fold is not read until the outer model is finished.
 3. **A fixed patch pool.**  Every slide is represented by the same number of
-   patches (see ``extract_patch_pool.py``), which removes both the GHI-vs-rest
+   patches (see ``pool_from_coords.py`` and ``pool_npz_to_pt.py``), which removes both the GHI-vs-rest
    patch-count divergence and the per-access ``torch.randperm`` draw recorded as
    N-10.  Evaluation becomes deterministic.
 

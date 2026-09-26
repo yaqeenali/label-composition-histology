@@ -2,7 +2,11 @@
 """Analyses the cold review asked for, run on the locked predictions.
 
 M1  Incremental value: clinical + histology versus clinical alone -- a stacked
-    logistic model refitted inside each fold (prediction-side answer), and a
+    logistic model refitted inside each fold (prediction-side answer; NOTE: the
+    training patients' histology scores here are pooled out-of-fold predictions
+    from models that saw the held-out fold, so this estimate can be optimistic.
+    The reported combined model is the cross-fitted one in
+    crossfit_combined.py; the columns kept here are for comparison), and a
     likelihood-ratio test for the out-of-fold histology score added to the
     clinical model on the full data (association-side answer).
 M3  ER alone as what it is -- one fixed binary predictor, oriented a priori

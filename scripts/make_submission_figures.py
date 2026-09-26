@@ -90,9 +90,9 @@ def fig1_design(out: Path) -> None:
     panel(1, 96, "a", "Slide representation")
     yb, hb = 78, 12
     box(1, yb, 17, hb, "Diagnostic H&E\nwhole-slide image")
-    box(21.5, yb, 17, hb, "Tiling\n256 px at 20$\\times$\n(median 19,376 tiles)")
-    box(42, yb, 17, hb, "UNI encoder\n1024-d embedding\nper tile")
-    box(62.5, yb, 17, hb, "Fixed seeded pool\n512 tiles per slide")
+    box(21.5, yb, 17, hb, "Tiling\n256 px at 20$\\times$\nmedian 19,376\npatches", size=8)
+    box(42, yb, 17, hb, "UNI encoder\n1024-d embedding\nper patch")
+    box(62.5, yb, 17, hb, "Fixed random pool\n512 patches per slide")
     box(83, yb, 16, hb, "Slide bag\n512 $\\times$ 1024", fc="white", ec=MODEL, lw=1.2)
     for x in (18, 38.5, 59, 79.5):
         arrow(x, yb + hb / 2, x + 3.4, yb + hb / 2)
@@ -101,9 +101,9 @@ def fig1_design(out: Path) -> None:
     panel(1, 71, "b", "Gated-attention multiple-instance model")
     yc, hc = 52, 13
     box(1, yc, 17, hc, "Slide bag\n512 $\\times$ 1024", fc="white", ec=MODEL, lw=1.2)
-    box(21.5, yc, 19, hc, "Shared projection\n$h_i = W x_i$")
+    box(21.5, yc, 19, hc, "Shared projection\n$h_i = \\mathrm{ReLU}(W x_i)$")
     box(44, yc, 24, hc, "Gated attention\n"
-                        r"$a_i \propto w^\top(\tanh(Vh_i)\odot\sigma(Uh_i))$")
+                        r"$a_i \propto \exp\{w^\top(\tanh(Vh_i)\odot\sigma(Uh_i))\}$", size=7.0)
     box(71.5, yc, 13.5, hc, "Pooling\n$z=\\sum_i a_i h_i$")
     box(88, yc, 11, hc, "Regression\nhead", fc="white", ec=MODEL, lw=1.2)
     for x in (18, 40.5, 68, 85):
@@ -118,7 +118,7 @@ def fig1_design(out: Path) -> None:
                        "four\ntargets and ER status", fc="white", ec=INK, lw=1.1)
 
     arms = [
-        (33.0, "Histology model\ngated-attention MIL", "white", MODEL, 1.2),
+        (33.0, "Histology model\ngated-attention network", "white", MODEL, 1.2),
         (24.5, "ER status alone", FILL, RULE, 0.8),
         (16.0, "Clinicopathological model\nage, ER, PR, HER2, nodes, stage", "white", CLIN, 1.2),
         (4.0, "MRI radiomics\nnested feature and penalty selection", FILL, RULE, 0.8),
@@ -145,8 +145,8 @@ def fig1_design(out: Path) -> None:
 # --------------------------------------------------------------------------- #
 
 def fig2_flow(out: Path) -> None:
-    fig, ax = plt.subplots(figsize=(6.9, 3.5))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 100); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(6.9, 5.2))
+    ax.set_xlim(0, 100); ax.set_ylim(0, 125); ax.axis("off")
 
     def box(x, y, w, h, title, n, bold=False):
         ax.add_patch(FancyBboxPatch((x, y), w, h,
@@ -171,17 +171,22 @@ def fig2_flow(out: Path) -> None:
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
                                      mutation_scale=8, color=MUTED, linewidth=0.8))
 
-    box(2, 76, 46, 20, "Recomputed signature scores available", 100)
-    box(2, 42, 46, 20, "With extracted whole-slide features", 83)
-    box(2, 8, 46, 20, "Analysis cohort", 82, bold=True)
-    excl(58, 64, 40, 12, "No extracted slide features", 17)
-    excl(58, 30, 40, 12, "Neoadjuvant chemotherapy", 1)
+    box(2, 105, 46, 15, "Recomputed signature scores", 100)
+    box(2, 80, 46, 15, "In the MRI subset", 84)
+    box(2, 55, 46, 15, "With a diagnostic slide", 83)
+    box(2, 30, 46, 15, "Analysis cohort", 82, bold=True)
+    box(2, 5, 46, 15, "With complete covariates", 81, bold=True)
+    excl(58, 94, 40, 9, "Outside the MRI subset", 16)
+    excl(58, 69, 40, 9, "No diagnostic slide", 1)
+    excl(58, 44, 40, 9, "Neoadjuvant treatment", 1)
+    excl(58, 19, 40, 9, "HER2 equivocal on both tests", 1)
 
-    arrow(25, 76, 25, 62.6); arrow(25, 42, 25, 28.6)
-    arrow(25, 70, 57.4, 70); arrow(25, 36, 57.4, 36)
+    for y in (105, 80, 55, 30):
+        arrow(25, y, 25, y - 9.4)
+        arrow(25, y - 6.5, 57.4, y - 6.5)
 
-    ax.text(2, 1.5, "A further 7 slides had extracted features but no signature score "
-                    "and were never eligible.", fontsize=7.5, color=MUTED)
+    ax.text(2, -1.5, "Slides were processed only for the 91-patient MRI subset; seven of its 90 "
+                     "slides belong to patients without signature scores.", fontsize=7.5, color=MUTED)
     fig.savefig(out / "FigS1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
@@ -215,20 +220,21 @@ def fig3_mechanism(res: Path, out: Path) -> None:
                  markeredgecolor="white", markeredgewidth=1.2, zorder=4)
         axL.plot([r.d_vs_clin_tuned], [i - 0.28], "D", markerfacecolor="white",
                  markeredgecolor=MODEL, markersize=4.2, markeredgewidth=1.0, zorder=3)
-        axL.text(0.905, i, f"{r.d_vs_clin_predeclared:+.3f}  {pfmt(r.p_clin_predeclared)}",
+        axL.text(0.905, i, f"{r.d_vs_clin_predeclared:+.3f}".replace("-", "−") + f"  {pfmt(r.p_clin_predeclared)}",
                  ha="right", va="center", fontsize=8)
     axL.set_yticks(range(len(order))); axL.set_yticklabels([SHORT[a] for a in order])
     axL.set_xlim(-0.22, 0.92)
-    axL.set_xticks([-0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    axL.set_xticks([-0.2, 0.0, 0.2, 0.4])
+    axL.set_xticklabels(["−0.2", "0", "0.2", "0.4"])
     axL.set_ylim(-0.7, len(order) - 0.4)
     axL.set_xlabel("Gain in AUC over the clinicopathological model (95% CI)")
     axL.grid(axis="x", color=RULE, linewidth=0.4, alpha=0.6); axL.set_axisbelow(True)
     axL.set_title("a", loc="left", fontsize=11, fontweight="bold", pad=6)
     axL.tick_params(axis="y", length=0)
     axL.legend(handles=[Line2D([], [], marker="o", linestyle="", color=MODEL, markersize=6,
-                               label="pre-declared comparator (C = 1)"),
+                               label="C = 1 comparator (95% CI)"),
                         Line2D([], [], marker="D", linestyle="", markerfacecolor="white",
-                               markeredgecolor=MODEL, markersize=4.2, label="penalty tuned by inner CV")],
+                               markeredgecolor=MODEL, markersize=4.2, label="tuned-penalty comparator")],
                loc="lower right", frameon=False, fontsize=7, handletextpad=0.3,
                borderaxespad=0.1, labelcolor=INK)
 
@@ -269,7 +275,7 @@ def fig3_mechanism(res: Path, out: Path) -> None:
     axR.grid(color=RULE, linewidth=0.4, alpha=0.6); axR.set_axisbelow(True)
     axR.set_title("b", loc="left", fontsize=11, fontweight="bold", pad=6)
     axR.legend(handles=[Line2D([], [], marker="o", linestyle="", color=MODEL, markersize=6,
-                               label="published group call"),
+                               label="group call in score file"),
                         Line2D([], [], marker="D", linestyle="", markerfacecolor="white",
                                markeredgecolor=MODEL, markersize=4.4, label="alternative cut")],
                loc="upper right", frameon=False, fontsize=7, handletextpad=0.3,

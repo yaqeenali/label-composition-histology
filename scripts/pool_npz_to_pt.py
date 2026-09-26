@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Convert the ``.npz`` pools from ``extract_patch_pool.py`` into ``.pt`` bundles.
+"""Convert the ``.npz`` pools into ``.pt`` bundles.
 
-``extract_patch_pool.py`` runs without PyTorch, so it writes numpy archives.
+The first-stage pools are numpy archives (originally written by the
+preparatory script ``extract_patch_pool.py``, which is not in this repository;
+``pool_from_coords.py`` rebuilds them from Trident output and the released
+patch coordinates).
 ``WSIMILDataset`` loads Trident bundles with ``torch.load`` and expects
 ``{'data': {'features', 'coords'}, 'meta'}``.  This is the one-line bridge.
 

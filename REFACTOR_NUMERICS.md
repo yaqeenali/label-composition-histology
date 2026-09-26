@@ -299,7 +299,10 @@ per-fold positive counts to `partition_balance.csv`.
 
 ### D-12 · A fixed patch pool replaces per-access subsampling
 Each slide is reduced once, with a recorded per-slide seed, to a fixed pool
-(`scripts/extract_patch_pool.py`). This removes two things at once: the
+(`scripts/extract_patch_pool.py`; that preparatory script is not included in
+the public repository, whose `data/tcga_brca/patch_coords_1024.csv.gz` lists
+the patches it selected and `scripts/pool_from_coords.py` rebuilds the pools
+from them). This removes two things at once: the
 GHI-uses-500-patches / everyone-else-uses-all divergence, and the per-access
 `torch.randperm` draw recorded as N-10, which made a fold's test predictions
 depend on how many times the loader had been called before them. Evaluation is
