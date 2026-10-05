@@ -92,7 +92,7 @@ def fig1_design(out: Path) -> None:
     yb, hb = 78, 12
     box(1, yb, 17, hb, "Diagnostic H&E\nwhole-slide image")
     box(21.5, yb, 17, hb, "Tiling\n256 px at 20$\\times$\nmedian 19,376\npatches", size=8)
-    box(42, yb, 17, hb, "UNI encoder\n1024-d embedding\nper patch")
+    box(42, yb, 17, hb, "UNI encoder\n1,024-d embedding\nper patch")
     box(62.5, yb, 17, hb, "Fixed random pool\n512 patches per slide")
     box(83, yb, 16, hb, "Slide bag\n512 $\\times$ 1024", fc="white", ec=MODEL, lw=1.2)
     for x in (18, 38.5, 59, 79.5):
@@ -131,7 +131,7 @@ def fig1_design(out: Path) -> None:
         arrow(61.9, y + 3.8, 67.1, 25.5)
     arrow(61.9, 7.8, 67.1, 7.8)
 
-    box(67.5, 18, 31.5, 15, "Paired bootstrap on the same\npatients, 4000 resamples\n"
+    box(67.5, 18, 31.5, 15, "Paired bootstrap on the same\npatients, 4,000 resamples\n"
                             "histology $-$ comparator\n$\\Delta$AUC with 95% CI",
         fc="white", ec=INK, lw=1.1, size=8)
     box(67.5, 3, 31.5, 9.6, "AUC under nested selection;\noptimism = non-nested $-$ nested",
@@ -147,16 +147,16 @@ def fig1_design(out: Path) -> None:
 
 def fig2_flow(out: Path) -> None:
     fig, ax = plt.subplots(figsize=(6.9, 5.2))
-    ax.set_xlim(0, 100); ax.set_ylim(0, 125); ax.axis("off")
+    ax.set_xlim(-1, 101); ax.set_ylim(0, 125); ax.axis("off")
 
     def box(x, y, w, h, title, n, bold=False):
         ax.add_patch(FancyBboxPatch((x, y), w, h,
                                     boxstyle="round,pad=0,rounding_size=1.0",
                                     facecolor="white", edgecolor=INK if bold else MUTED,
                                     linewidth=1.3 if bold else 0.8))
-        ax.text(x + 3, y + h - 6.5, title, fontsize=9,
-                fontweight="bold" if bold else "normal", va="top")
-        ax.text(x + w - 3, y + 6, f"n = {n}", fontsize=9.5, ha="right",
+        ax.text(x + 3, y + h / 2, title, fontsize=9,
+                fontweight="bold" if bold else "normal", va="center")
+        ax.text(x + w - 3, y + h / 2, f"n = {n}", fontsize=9.5, ha="right", va="center",
                 fontweight="bold" if bold else "normal")
 
     def excl(x, y, w, h, text, n):
@@ -172,22 +172,23 @@ def fig2_flow(out: Path) -> None:
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
                                      mutation_scale=8, color=MUTED, linewidth=0.8))
 
-    box(2, 105, 46, 15, "Recomputed signature scores", 100)
-    box(2, 80, 46, 15, "In the MRI subset", 84)
-    box(2, 55, 46, 15, "With a diagnostic slide", 83)
-    box(2, 30, 46, 15, "Analysis cohort", 82, bold=True)
-    box(2, 5, 46, 15, "With complete covariates", 81, bold=True)
-    excl(58, 94, 40, 9, "Outside the MRI subset", 16)
-    excl(58, 69, 40, 9, "No diagnostic slide", 1)
-    excl(58, 44, 40, 9, "Neoadjuvant treatment", 1)
-    excl(58, 19, 40, 9, "HER2 equivocal on both tests", 1)
+    box(0, 105, 52, 15, "Recomputed signature scores", 100)
+    box(0, 80, 52, 15, "In the radiogenomics subset", 84)
+    box(0, 55, 52, 15, "With a diagnostic slide", 83)
+    box(0, 30, 52, 15, "Analysis cohort", 82, bold=True)
+    box(0, 5, 52, 15, "With complete covariates", 81, bold=True)
+    excl(58, 94, 42, 9, "Outside the subset", 16)
+    excl(58, 69, 42, 9, "No diagnostic slide", 1)
+    excl(58, 44, 42, 9, "Neoadjuvant treatment", 1)
+    excl(58, 19, 42, 9, "HER2 equivocal on both tests", 1)
 
     for y in (105, 80, 55, 30):
-        arrow(25, y, 25, y - 9.4)
-        arrow(25, y - 6.5, 57.4, y - 6.5)
+        arrow(26, y, 26, y - 9.4)
+        arrow(26, y - 6.5, 57.4, y - 6.5)
 
-    ax.text(2, -1.5, "Slides were processed only for the 91-patient MRI subset; seven of its 90 "
-                     "slides belong to patients without signature scores.", fontsize=7.5, color=MUTED)
+    ax.text(0, -1.5, "Slides were processed only for the radiogenomics subset (91 patients with MRI);\n"
+                     "seven of its 90 slides belong to patients without signature scores.",
+            fontsize=7.5, color=MUTED, va="top")
     fig.savefig(out / "Fig1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
