@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Submission figures for JCO Clinical Cancer Informatics.
+"""Submission figures for the Journal of Imaging Informatics in Medicine.
 
-Fig 1   study design and model architecture
-Fig 2   the histology gain over the clinicopathological model, and how it
-        tracks label composition (2 panels)
-Fig S1  cohort flow (Data Supplement)
+Fig 1   cohort flow
+Fig 2   study design and model architecture
+Fig 3   the histology gain over the clinicopathological model, and how it
+        tracks agreement between each label and ER status (2 panels)
 
-Springer requirements followed: sans-serif labels 8-12 pt (Liberation Sans is
-metrically Arial), 600 dpi combination art, all lines >= 0.3 pt, files named
-Fig1.png, Fig2.png, FigS1.png, captions live in the manuscript rather than the image.
+Springer requirements followed: sans-serif labels (Liberation Sans is
+metrically Arial), 600 dpi combination art, RGB, all lines >= 0.3 pt; each
+figure is written as PNG (for embedding) and as LZW-compressed TIFF (for
+upload); captions live in the manuscript rather than in the image.
 
 Colours are the CVD-safe pair #1f6fb2 / #c1662b, validated with the dataviz
 palette checker; identity is carried by direct labels as well as by hue, so the
@@ -136,7 +137,7 @@ def fig1_design(out: Path) -> None:
     box(67.5, 3, 31.5, 9.6, "AUC under nested selection;\noptimism = non-nested $-$ nested",
         fc="white", ec=RULE, lw=0.8, size=8)
 
-    fig.savefig(out / "Fig1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "Fig2.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -187,7 +188,7 @@ def fig2_flow(out: Path) -> None:
 
     ax.text(2, -1.5, "Slides were processed only for the 91-patient MRI subset; seven of its 90 "
                      "slides belong to patients without signature scores.", fontsize=7.5, color=MUTED)
-    fig.savefig(out / "FigS1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "Fig1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -281,7 +282,7 @@ def fig3_mechanism(res: Path, out: Path) -> None:
                loc="upper right", frameon=False, fontsize=7, handletextpad=0.3,
                borderaxespad=0.1, labelcolor=INK)
 
-    fig.savefig(out / "Fig2.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "Fig3.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -294,10 +295,14 @@ def main(argv=None) -> None:
     res, out = Path(a.results), Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     fig1_design(out); fig2_flow(out); fig3_mechanism(res, out)
-    for stale in ("Fig3.png", "Fig4.png"):
-        (out / stale).unlink(missing_ok=True)
+    (out / "FigS1.png").unlink(missing_ok=True)
+    from PIL import Image
     for f in sorted(out.glob("Fig*.png")):
-        print(f"{f.name}  {f.stat().st_size/1024:.0f} KB")
+        im = Image.open(f).convert("RGB")
+        tif = f.with_suffix(".tif")
+        im.save(tif, compression="tiff_lzw", dpi=(DPI, DPI))
+        w_mm = im.size[0] / DPI * 25.4
+        print(f"{f.name} / {tif.name}  {im.size[0]}x{im.size[1]} px, {w_mm:.0f} mm wide at {DPI} dpi")
 
 
 if __name__ == "__main__":

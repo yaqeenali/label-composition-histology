@@ -1,10 +1,10 @@
-# Label composition and the margin of histology over routine clinicopathological variables
+# Deep learning on H&E whole-slide images versus routine clinicopathological variables across four breast cancer genomic risk signatures
 
 Code and data description for reproducing:
 
-> Ali Y, Gregori J. *Label composition and the margin of histology over routine
-> clinicopathological variables across four breast cancer risk signatures.*
-> Submitted to JCO Clinical Cancer Informatics, 2026.
+> Ali Y, Gregori J. *Deep learning on hematoxylin and eosin whole-slide images
+> versus routine clinicopathological variables across four breast cancer genomic
+> risk signatures.* Submitted to the Journal of Imaging Informatics in Medicine, 2026.
 
 Four recomputed genomic risk signatures (Oncotype DX recurrence score,
 MammaPrint, PAM50 ROR-S and ROR-P) are predicted from H&E whole-slide images
@@ -179,7 +179,9 @@ python scripts/separation_check.py --results Results_locked/modal \
 python scripts/repeated_cv.py --pt_dir data/tcga_brca/_pool_pt --out Results_repeatedcv \
     --clinical data/tcga_brca/clinical_91_from_vincenzo.csv --repeats 5
 
-# 7. Figures (design diagram, cohort flow, gain forest plot).
+# 7. Figures: Fig 1 cohort flow, Fig 2 design and model, Fig 3 gain over the
+#    clinicopathological model and its relation to ER agreement of the label
+#    (PNG and LZW-compressed TIFF at 600 dpi).
 python scripts/make_submission_figures.py --results Results_locked/modal --out figs
 ```
 

@@ -70,7 +70,7 @@ Columns read by the code:
 |---|---|
 | `PATIENT_ID` | patient key (`CLID`) |
 | `AGE` | covariate 1, age at diagnosis (years) |
-| `ER_STATUS_BY_IHC` | covariate 2, `Positive` -> 1 else 0; also the ER status used for partition balancing, label composition and the ER-alone comparator |
+| `ER_STATUS_BY_IHC` | covariate 2, `Positive` -> 1 else 0; also the ER status used for partition balancing, label–ER agreement and the ER-alone comparator |
 | `PR_STATUS_BY_IHC` | covariate 3, `Positive` -> 1 else 0 |
 | `HER2_FISH_STATUS`, `IHC_HER2` | covariate 4, HER2: FISH `Positive`/`Negative` where available, otherwise IHC `Positive`/`Negative`; equivocal or unavailable on both -> missing (one patient), who is excluded from the comparator analyses (n = 81). Five patients have both results; they disagree for one (IHC 2+ recorded as positive, FISH negative), who is coded negative |
 | `AJCC_NODES_PATHOLOGIC_PN` | covariate 5, nodal status: any value not starting with `N0` -> 1 (this includes one `NX` patient) |
