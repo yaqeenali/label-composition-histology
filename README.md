@@ -4,7 +4,7 @@ Code and data description for reproducing:
 
 > Ali Y, Gregori J. *Deep learning on hematoxylin and eosin whole-slide images
 > versus routine clinicopathological variables across four breast cancer genomic
-> risk signatures.* Submitted to the Journal of Imaging Informatics in Medicine, 2026.
+> risk signatures.* Manuscript submitted for publication, 2026.
 
 Four recomputed genomic risk signatures (Oncotype DX recurrence score,
 MammaPrint, PAM50 ROR-S and ROR-P) are predicted from H&E whole-slide images

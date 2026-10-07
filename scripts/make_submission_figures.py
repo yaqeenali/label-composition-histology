@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Submission figures for the Journal of Imaging Informatics in Medicine.
+"""Submission figures (Medical Oncology submission, October 2026).
 
-Fig 1   cohort flow
-Fig 2   study design and model architecture
-Fig 3   the histology gain over the clinicopathological model, and how it
+Fig 1   study design and model architecture
+Fig 2   the histology gain over the clinicopathological model, and how it
         tracks agreement between each label and ER status (2 panels)
+Fig S1  cohort flow (Online Resource 1)
 
 Springer requirements followed: sans-serif labels (Liberation Sans is
 metrically Arial), 600 dpi combination art, RGB, all lines >= 0.3 pt; each
 figure is written as PNG (for embedding) and as LZW-compressed TIFF (for
-upload); captions live in the manuscript rather than in the image.
+upload), with the TIFF resolution tag set so that no figure is wider than the
+journal's 174 mm; captions live in the manuscript rather than in the image.
 
 Colours are the CVD-safe pair #1f6fb2 / #c1662b, validated with the dataviz
 palette checker; identity is carried by direct labels as well as by hue, so the
@@ -137,7 +138,7 @@ def fig1_design(out: Path) -> None:
     box(67.5, 3, 31.5, 9.6, "AUC under nested selection;\noptimism = non-nested $-$ nested",
         fc="white", ec=RULE, lw=0.8, size=8)
 
-    fig.savefig(out / "Fig2.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "Fig1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -189,7 +190,7 @@ def fig2_flow(out: Path) -> None:
     ax.text(0, -1.5, "Slides were processed only for the radiogenomics subset (91 patients with MRI);\n"
                      "seven of its 90 slides belong to patients without signature scores.",
             fontsize=7.5, color=MUTED, va="top")
-    fig.savefig(out / "Fig1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "FigS1.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -283,7 +284,7 @@ def fig3_mechanism(res: Path, out: Path) -> None:
                loc="upper right", frameon=False, fontsize=7, handletextpad=0.3,
                borderaxespad=0.1, labelcolor=INK)
 
-    fig.savefig(out / "Fig3.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
+    fig.savefig(out / "Fig2.png", dpi=DPI, bbox_inches="tight", pad_inches=0.05)
     plt.close(fig)
 
 
@@ -296,14 +297,18 @@ def main(argv=None) -> None:
     res, out = Path(a.results), Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     fig1_design(out); fig2_flow(out); fig3_mechanism(res, out)
-    (out / "FigS1.png").unlink(missing_ok=True)
+    (out / "Fig3.png").unlink(missing_ok=True)
+    import math
     from PIL import Image
     for f in sorted(out.glob("Fig*.png")):
         im = Image.open(f).convert("RGB")
         tif = f.with_suffix(".tif")
-        im.save(tif, compression="tiff_lzw", dpi=(DPI, DPI))
-        w_mm = im.size[0] / DPI * 25.4
-        print(f"{f.name} / {tif.name}  {im.size[0]}x{im.size[1]} px, {w_mm:.0f} mm wide at {DPI} dpi")
+        # declare the print size: 600 dpi, or more where the figure would exceed 174 mm
+        dpi = max(DPI, math.ceil(im.size[0] / (174 / 25.4)))
+        im.save(tif, compression="tiff_lzw", dpi=(dpi, dpi))
+        im.save(f, dpi=(dpi, dpi))
+        w_mm = im.size[0] / dpi * 25.4
+        print(f"{f.name} / {tif.name}  {im.size[0]}x{im.size[1]} px, {w_mm:.0f} mm wide at {dpi} dpi")
 
 
 if __name__ == "__main__":
